@@ -1,47 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
+import Sidebar from './components/Layout/Sidebar';
+import Header from './components/Layout/Header';
+import Dashboard from './pages/Dashboard';
+import TestList from './pages/TestCases/List';
+import TestForm from './pages/TestCases/Form';
+import Runner from './pages/Execute/Runner';
+import ReportsList from './pages/Reports/List';
+import ReportDetails from './pages/Reports/Details';
 
 // PUBLIC_INTERFACE
 function App() {
-  const [theme, setTheme] = useState('light');
-
-  // Effect to apply theme to document element
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
-
-  // PUBLIC_INTERFACE
-  const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
-  };
-
+  /** Main application rendering sidebar layout and routes. */
   return (
-    <div className="App">
-      <header className="App-header">
-        <button 
-          className="theme-toggle" 
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-        >
-          {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
-        </button>
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <p>
-          Current theme: <strong>{theme}</strong>
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app-root">
+      <Router>
+        <div className="layout">
+          <Sidebar />
+          <div className="content">
+            <Header />
+            <main className="main">
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/tests" element={<TestList />} />
+                <Route path="/tests/new" element={<TestForm />} />
+                <Route path="/tests/:id" element={<TestForm />} />
+                <Route path="/execute" element={<Runner />} />
+                <Route path="/reports" element={<ReportsList />} />
+                <Route path="/reports/:id" element={<ReportDetails />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </main>
+          </div>
+        </div>
+      </Router>
     </div>
   );
 }

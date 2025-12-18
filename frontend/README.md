@@ -1,82 +1,53 @@
-# Lightweight React Template for KAVIA
+# AI Test Automation Suite - Frontend
 
-This project provides a minimal React template with a clean, modern UI and minimal dependencies.
+Sidebar-based React application to manage test cases, execute runs (with polling), view reports, and generate AI-powered tests.
 
-## Features
+## Quick Start
 
-- **Lightweight**: No heavy UI frameworks - uses only vanilla CSS and React
-- **Modern UI**: Clean, responsive design with KAVIA brand styling
-- **Fast**: Minimal dependencies for quick loading times
-- **Simple**: Easy to understand and modify
+1. Copy `.env.example` to `.env` and adjust variables as needed.
+2. Install dependencies:
+   - npm install
+3. Run the app:
+   - npm start
+4. The app assumes the backend runs on port 3001 when env is not configured. Set `REACT_APP_API_BASE` or `REACT_APP_BACKEND_URL` to override.
 
-## Getting Started
+## Environment Variables
 
-In the project directory, you can run:
+- REACT_APP_API_BASE: Preferred backend base URL (e.g., http://localhost:3001)
+- REACT_APP_BACKEND_URL: Alternate env var supported for backend base
+- REACT_APP_HEALTHCHECK_PATH: Health path for backend (defaults to `/`)
+- See `.env.example` for the full list supported by this container.
 
-### `npm start`
+## API Client
 
-Runs the app in development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Axios-based client derives base URL in this order:
+1. REACT_APP_API_BASE
+2. REACT_APP_BACKEND_URL
+3. Replace current origin port with 3001
 
-### `npm test`
+Health indicator uses `REACT_APP_HEALTHCHECK_PATH` or `/` if not provided.
 
-Launches the test runner in interactive watch mode.
+## Navigation
 
-### `npm run build`
+- Dashboard: Overview with quick stats and actions
+- Test Cases: List, create, and edit tests
+- Execute: Trigger a run and poll status (HTTP polling)
+- Reports: List and view report details
+- AI Generate: Integrated into Test Form for drafting tests
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Theme
 
-## Customization
+Corporate Navy (classic, clean):
+- Primary: #1E3A8A
+- Secondary: #F59E0B
+- Success: #059669
+- Error: #DC2626
+- Background: #F3F4F6
+- Surface: #FFFFFF
+- Text: #111827
 
-### Colors
+## Notes
 
-The main brand colors are defined as CSS variables in `src/App.css`:
-
-```css
-:root {
-  --kavia-orange: #E87A41;
-  --kavia-dark: #1A1A1A;
-  --text-color: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --border-color: rgba(255, 255, 255, 0.1);
-}
-```
-
-### Components
-
-This template uses pure HTML/CSS components instead of a UI framework. You can find component styles in `src/App.css`. 
-
-Common components include:
-- Buttons (`.btn`, `.btn-large`)
-- Container (`.container`)
-- Navigation (`.navbar`)
-- Typography (`.title`, `.subtitle`, `.description`)
-
-## Learn More
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- No global state manager; pages use local hooks and a simple `useApi` helper.
+- Polling interval for execution status is ~2 seconds; adjust as needed.
+- Backend host is never hardcoded; env or derived preview URL is used.
