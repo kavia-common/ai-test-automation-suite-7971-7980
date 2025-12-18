@@ -36,8 +36,14 @@ A quick link to the backend API docs is available in the top-right header. It us
 ## Preview Integration Notes
 
 - Backend CORS must allow the frontend origin (scheme+host+port `:3000`).
+  In this preview, allow exactly: https://vscode-internal-25119-beta.beta01.cloud.kavia.ai:3000
 - Healthcheck path defaults to `/`. If your backend exposes a different endpoint (e.g. `/health`), set `REACT_APP_HEALTHCHECK_PATH=/health`.
 - Ensure the backend is accessible over the same scheme as the frontend (both http or both https) to avoid mixed content issues.
+
+## Smoke Test (End-to-End)
+1. Tests → New Test → fill minimal details → Create Test.
+2. Execute → select the created test → Start Execution (polling ~2s).
+3. Reports → confirm a new entry appears → Details to view summary.
 
 ## Navigation
 

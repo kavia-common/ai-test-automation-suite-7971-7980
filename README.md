@@ -16,14 +16,21 @@ Frontend → Backend integration:
 
 Setup
 1. cd frontend
-2. cp .env.example .env  (optional to edit)
+2. cp .env.example .env  (optional to edit; leaving empty is fine in preview)
 3. npm install
 4. npm start
 
 Backend requirements
-- Ensure Flask backend enables CORS for the frontend origin (:3000).
-- Expose a health endpoint at `/` or set `REACT_APP_HEALTHCHECK_PATH` accordingly.
+- Ensure Flask backend enables CORS for the frontend origin exactly:
+  https://vscode-internal-25119-beta.beta01.cloud.kavia.ai:3000
+- Expose a health endpoint at `/` (or set `REACT_APP_HEALTHCHECK_PATH` accordingly).
 - If OpenAPI docs are available at `/docs`, the header link will open them.
+
+End-to-end smoke flow (from UI)
+1. Create a new test (Tests → New Test → Save).
+2. Trigger execution (Execute → select test(s) → Start Execution).
+3. Polls every ~2s until status is completed/failed/cancelled.
+4. View reports (Reports → Details) to see the run summary.
 
 ```diff
 Important:
