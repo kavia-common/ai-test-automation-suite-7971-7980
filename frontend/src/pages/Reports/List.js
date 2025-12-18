@@ -13,7 +13,7 @@ export default function ReportsList() {
         <h3 style={{ margin: 0 }}>Reports</h3>
       </div>
       {list.loading && <div>Loading reports...</div>}
-      {list.error && <div className="error">Failed to load reports.</div>}
+      {list.error && <div className="error">Failed to load reports. Verify backend reports endpoints.</div>}
       {!list.loading && (!Array.isArray(list.data) || list.data.length === 0) && (
         <div className="empty">No reports generated yet.</div>
       )}

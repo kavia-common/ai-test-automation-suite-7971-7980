@@ -14,7 +14,7 @@ export default function ReportDetails() {
         <Link to="/reports" className="btn">Back</Link>
       </div>
       {req.loading && <div>Loading...</div>}
-      {req.error && <div className="error">Failed to load report.</div>}
+      {req.error && <div className="error">Failed to load report. Verify backend and report ID.</div>}
       {req.data && (
         <>
           <h3 style={{ marginTop: 0 }}>{req.data.name || `Report ${id}`}</h3>

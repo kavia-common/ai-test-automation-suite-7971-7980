@@ -22,7 +22,7 @@ export default function TestList() {
         <button className="btn primary" onClick={() => navigate('/tests/new')}>New Test</button>
       </div>
       {list.loading && <div>Loading tests...</div>}
-      {list.error && <div className="error">Failed to load tests.</div>}
+      {list.error && <div className="error">Failed to load tests. Check backend availability and CORS.</div>}
       {!list.loading && (!Array.isArray(list.data) || list.data.length === 0) && (
         <div className="empty">No tests found. Create one to get started.</div>
       )}

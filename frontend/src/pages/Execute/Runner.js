@@ -75,7 +75,7 @@ export default function Runner() {
             <>
               <div style={{ marginBottom: 8 }}>Run ID: <code>{currentRun}</code></div>
               {status.loading && <div>Polling status...</div>}
-              {status.error && <div className="error">Polling failed.</div>}
+              {status.error && <div className="error">Polling failed. Please verify the backend run status endpoint.</div>}
               {status.data && (
                 <div>
                   <div>State: <span className={`badge ${status.data.status === 'completed' ? 'ok' : status.data.status === 'failed' ? 'err' : 'warn'}`}>{status.data.status}</span></div>

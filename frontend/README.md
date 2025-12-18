@@ -4,18 +4,23 @@ Sidebar-based React application to manage test cases, execute runs (with polling
 
 ## Quick Start
 
-1. Copy `.env.example` to `.env` and adjust variables as needed.
+1. Copy `.env.example` to `.env` and adjust variables as needed (usually you can leave it empty in preview).
 2. Install dependencies:
    - npm install
 3. Run the app:
    - npm start
-4. The app assumes the backend runs on port 3001 when env is not configured. Set `REACT_APP_API_BASE` or `REACT_APP_BACKEND_URL` to override.
+4. Base URL resolution:
+   - If `REACT_APP_API_BASE` is set, it is used as the backend base.
+   - Else if `REACT_APP_BACKEND_URL` is set, it is used.
+   - Else, the app derives the backend base by taking the current page origin and switching the port to `3001`.
+   - In the preview environment, this connects `https://...:3000` → `https://...:3001`.
 
 ## Environment Variables
 
 - REACT_APP_API_BASE: Preferred backend base URL (e.g., http://localhost:3001)
 - REACT_APP_BACKEND_URL: Alternate env var supported for backend base
 - REACT_APP_HEALTHCHECK_PATH: Health path for backend (defaults to `/`)
+- REACT_APP_BACKEND_DOCS_URL: Optional explicit URL to backend docs (defaults to `${API_BASE}/docs`)
 - See `.env.example` for the full list supported by this container.
 
 ## API Client
@@ -26,6 +31,13 @@ Axios-based client derives base URL in this order:
 3. Replace current origin port with 3001
 
 Health indicator uses `REACT_APP_HEALTHCHECK_PATH` or `/` if not provided.
+A quick link to the backend API docs is available in the top-right header. It uses `REACT_APP_BACKEND_DOCS_URL` if set, otherwise `${API_BASE}/docs`.
+
+## Preview Integration Notes
+
+- Backend CORS must allow the frontend origin (scheme+host+port `:3000`).
+- Healthcheck path defaults to `/`. If your backend exposes a different endpoint (e.g. `/health`), set `REACT_APP_HEALTHCHECK_PATH=/health`.
+- Ensure the backend is accessible over the same scheme as the frontend (both http or both https) to avoid mixed content issues.
 
 ## Navigation
 

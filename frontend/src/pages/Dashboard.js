@@ -14,7 +14,9 @@ export default function Dashboard() {
       <h3 style={{ marginTop: 0 }}>Dashboard</h3>
       {(tests.loading || reports.loading) && <div>Loading...</div>}
       {(tests.error || reports.error) && (
-        <div className="error">Failed to load summary.</div>
+        <div className="error">
+          Failed to load summary. Ensure the backend is reachable and CORS allows this origin.
+        </div>
       )}
       {!tests.loading && !reports.loading && (
         <div className="grid three">
