@@ -21,7 +21,11 @@ Sidebar-based React application to manage test cases, execute runs (with polling
 - REACT_APP_BACKEND_URL: Alternate env var supported for backend base
 - REACT_APP_HEALTHCHECK_PATH: Health path for backend (defaults to `/`)
 - REACT_APP_BACKEND_DOCS_URL: Optional explicit URL to backend docs (defaults to `${API_BASE}/docs`)
+- REACT_APP_FRONTEND_URL: Optional origin to communicate to backend for CORS allowlist; set on the backend process environment.
 - See `.env.example` for the full list supported by this container.
+
+If CORS issues are observed in preview, set on the backend:
+- REACT_APP_FRONTEND_URL=https://vscode-internal-36116-beta.beta01.cloud.kavia.ai:3000
 
 ## API Client
 
