@@ -7,6 +7,9 @@ export default function ReportsList() {
   const list = useApi(ReportsAPI.list, []);
   useEffect(() => { list.call(); }, []);
 
+  const getStatus = (r) => r.status || r.result || 'unknown';
+  const badgeClass = (val) => (val === 'passed' || val === 'completed') ? 'ok' : (val === 'failed' ? 'err' : 'warn');
+
   return (
     <div className="panel">
       <div className="toolbar">
@@ -23,23 +26,26 @@ export default function ReportsList() {
             <tr>
               <th>Report</th>
               <th>Date</th>
-              <th>Result</th>
+              <th>Status</th>
               <th />
             </tr>
           </thead>
           <tbody>
-            {list.data.map((r) => (
-              <tr key={r.id}>
-                <td>{r.name || `Report ${r.id}`}</td>
-                <td>{r.created_at ? new Date(r.created_at).toLocaleString() : '-'}</td>
-                <td>
-                  <span className={`badge ${r.result === 'passed' ? 'ok' : r.result === 'failed' ? 'err' : 'warn'}`}>
-                    {r.result || 'unknown'}
-                  </span>
-                </td>
-                <td><Link className="btn" to={`/reports/${r.id}`}>Details</Link></td>
-              </tr>
-            ))}
+            {list.data.map((r) => {
+              const status = getStatus(r);
+              return (
+                <tr key={r.id}>
+                  <td>{r.title || r.name || `Report ${r.id}`}</td>
+                  <td>{r.created_at ? new Date(r.created_at).toLocaleString() : '-'}</td>
+                  <td>
+                    <span className={`badge ${badgeClass(status)}`}>
+                      {status}
+                    </span>
+                  </td>
+                  <td><Link className="btn" to={`/reports/${r.id}`}>Details</Link></td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}

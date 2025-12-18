@@ -13,7 +13,8 @@ export default function TestForm() {
   const saveUpdate = useApi(TestsAPI.update, []);
   const aiGen = useApi(AIGenerateAPI.generate, []);
 
-  const [form, setForm] = useState({ name: '', type: 'functional', steps: '', metadata: '' });
+  // Harmonized backend fields: title, description, status
+  const [form, setForm] = useState({ title: '', description: '', status: 'draft' });
   const [prompt, setPrompt] = useState('');
 
   useEffect(() => {
@@ -21,10 +22,9 @@ export default function TestForm() {
       getReq.call(id).then((data) => {
         if (data) {
           setForm({
-            name: data.name || '',
-            type: data.type || 'functional',
-            steps: (Array.isArray(data.steps) ? data.steps.join('\n') : data.steps) || '',
-            metadata: typeof data.metadata === 'string' ? data.metadata : JSON.stringify(data.metadata || {}, null, 2),
+            title: data.title || data.name || '',
+            description: data.description || '',
+            status: data.status || 'draft',
           });
         }
       });
@@ -37,10 +37,9 @@ export default function TestForm() {
   const onSubmit = async (e) => {
     e.preventDefault();
     const payload = {
-      name: form.name,
-      type: form.type,
-      steps: form.steps.split('\n').filter(Boolean),
-      metadata: tryParseJSON(form.metadata),
+      title: form.title,
+      description: form.description,
+      status: form.status,
     };
     if (isEdit) {
       await saveUpdate.call(id, payload);
@@ -52,13 +51,15 @@ export default function TestForm() {
 
   const onGenerate = async () => {
     const res = await aiGen.call(prompt);
-    if (res && Array.isArray(res.tests) && res.tests.length > 0) {
-      const t = res.tests[0];
+    // Adapt to response mapping for /api/ai/generate-tests
+    // Expecting shape like { tests: [{ title, description, status }] } or { suggestions: [...] }
+    const candidates = Array.isArray(res?.tests) ? res.tests : (Array.isArray(res?.suggestions) ? res.suggestions : []);
+    if (candidates.length > 0) {
+      const t = candidates[0];
       setForm({
-        name: t.name || 'AI Generated Test',
-        type: t.type || 'functional',
-        steps: (Array.isArray(t.steps) ? t.steps.join('\n') : (t.steps || '')),
-        metadata: JSON.stringify(t.metadata || {}, null, 2),
+        title: t.title || t.name || 'AI Generated Test',
+        description: t.description || '',
+        status: t.status || 'proposed',
       });
     }
   };
@@ -80,25 +81,21 @@ export default function TestForm() {
 
       <form onSubmit={onSubmit} className="grid two" style={{ gap: 16 }}>
         <div>
-          <label>Name</label>
-          <input className="input" name="name" value={form.name} onChange={onChange} required />
+          <label>Title</label>
+          <input className="input" name="title" value={form.title} onChange={onChange} required />
         </div>
         <div>
-          <label>Type</label>
-          <select className="select" name="type" value={form.type} onChange={onChange}>
-            <option value="functional">Functional</option>
-            <option value="integration">Integration</option>
-            <option value="e2e">E2E</option>
-            <option value="performance">Performance</option>
+          <label>Status</label>
+          <select className="select" name="status" value={form.status} onChange={onChange}>
+            <option value="draft">Draft</option>
+            <option value="proposed">Proposed</option>
+            <option value="approved">Approved</option>
+            <option value="deprecated">Deprecated</option>
           </select>
         </div>
         <div className="grid" style={{ gridColumn: '1 / -1' }}>
-          <label>Steps (one per line)</label>
-          <textarea className="textarea" name="steps" value={form.steps} onChange={onChange} />
-        </div>
-        <div className="grid" style={{ gridColumn: '1 / -1' }}>
-          <label>Metadata (JSON)</label>
-          <textarea className="textarea" name="metadata" value={form.metadata} onChange={onChange} />
+          <label>Description</label>
+          <textarea className="textarea" name="description" value={form.description} onChange={onChange} />
         </div>
       </form>
 

@@ -30,8 +30,8 @@ export default function TestList() {
         <table className="table" aria-label="Test cases table">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Type</th>
+              <th>Title</th>
+              <th>Status</th>
               <th>Last Updated</th>
               <th>Actions</th>
             </tr>
@@ -39,8 +39,8 @@ export default function TestList() {
           <tbody>
             {list.data.map((t) => (
               <tr key={t.id}>
-                <td>{t.name}</td>
-                <td><span className="badge">{t.type || 'N/A'}</span></td>
+                <td>{t.title || t.name}</td>
+                <td><span className="badge">{t.status || 'N/A'}</span></td>
                 <td>{t.updated_at ? new Date(t.updated_at).toLocaleString() : '-'}</td>
                 <td>
                   <Link to={`/tests/${t.id}`} className="btn">Edit</Link>{' '}

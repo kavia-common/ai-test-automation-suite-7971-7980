@@ -17,11 +17,11 @@ export default function ReportDetails() {
       {req.error && <div className="error">Failed to load report. Verify backend and report ID.</div>}
       {req.data && (
         <>
-          <h3 style={{ marginTop: 0 }}>{req.data.name || `Report ${id}`}</h3>
+          <h3 style={{ marginTop: 0 }}>{req.data.title || req.data.name || `Report ${id}`}</h3>
           <div className="grid two" style={{ marginBottom: 12 }}>
             <div className="card">
               <div><strong>Date:</strong> {req.data.created_at ? new Date(req.data.created_at).toLocaleString() : '-'}</div>
-              <div><strong>Result:</strong> <span className={`badge ${req.data.result === 'passed' ? 'ok' : req.data.result === 'failed' ? 'err' : 'warn'}`}>{req.data.result || 'unknown'}</span></div>
+              <div><strong>Result:</strong> <span className={`badge ${req.data.status === 'passed' || req.data.result === 'passed' ? 'ok' : (req.data.status === 'failed' || req.data.result === 'failed') ? 'err' : 'warn'}`}>{req.data.status || req.data.result || 'unknown'}</span></div>
             </div>
             <div className="card">
               <div><strong>Duration:</strong> {req.data.duration || '-'}</div>

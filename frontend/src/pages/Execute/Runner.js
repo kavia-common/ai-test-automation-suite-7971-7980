@@ -1,13 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useApi } from '../../hooks/useApi';
-import { ExecuteAPI, TestsAPI } from '../../api/endpoints';
+import { ExecuteAPI, TestsAPI, ReportsAPI } from '../../api/endpoints';
 
 export default function Runner() {
   const trigger = useApi(ExecuteAPI.trigger, []);
   const status = useApi(ExecuteAPI.status, []);
   const tests = useApi(TestsAPI.list, []);
   const [selection, setSelection] = useState({ testIds: [] });
-  const [currentRun, setCurrentRun] = useState(null);
+  const [currentExecution, setCurrentExecution] = useState(null);
+  const [reportForExecution, setReportForExecution] = useState(null);
   const pollRef = useRef(null);
 
   useEffect(() => { tests.call(); }, []);
@@ -15,15 +16,25 @@ export default function Runner() {
   const startRun = async () => {
     const payload = { test_ids: selection.testIds };
     const res = await trigger.call(payload);
-    if (res?.run_id) {
-      setCurrentRun(res.run_id);
-      // Start polling
+    // Expect backend to return { id, status, ... } or { execution_id }
+    const execId = res?.id || res?.execution_id || res?.run_id; // support legacy
+    if (execId) {
+      setCurrentExecution(execId);
+      setReportForExecution(null);
       if (pollRef.current) clearInterval(pollRef.current);
       pollRef.current = setInterval(async () => {
         try {
-          const st = await status.call(res.run_id);
-          if (st?.status && ['completed', 'failed', 'cancelled'].includes(st.status)) {
+          const st = await status.call(execId);
+          // When completed/failed/cancelled, stop polling and try load report by execution
+          const endStates = ['completed', 'failed', 'cancelled', 'done', 'finished'];
+          if (st?.status && endStates.includes(String(st.status).toLowerCase())) {
             clearInterval(pollRef.current);
+            try {
+              const rpt = await ReportsAPI.byExecution(execId);
+              setReportForExecution(rpt);
+            } catch {
+              // ignore if not present
+            }
           }
         } catch {
           clearInterval(pollRef.current);
@@ -55,7 +66,7 @@ export default function Runner() {
               tests.data.map((t) => (
                 <label key={t.id} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <input type="checkbox" checked={selection.testIds.includes(t.id)} onChange={() => toggle(t.id)} />
-                  <span>{t.name}</span>
+                  <span>{t.title || t.name}</span>
                 </label>
               ))
             ) : (
@@ -70,12 +81,12 @@ export default function Runner() {
         </div>
         <div className="card">
           <h4 style={{ marginTop: 0 }}>Status</h4>
-          {!currentRun && <div className="empty">No active run.</div>}
-          {currentRun && (
+          {!currentExecution && <div className="empty">No active run.</div>}
+          {currentExecution && (
             <>
-              <div style={{ marginBottom: 8 }}>Run ID: <code>{currentRun}</code></div>
+              <div style={{ marginBottom: 8 }}>Execution ID: <code>{currentExecution}</code></div>
               {status.loading && <div>Polling status...</div>}
-              {status.error && <div className="error">Polling failed. Please verify the backend run status endpoint.</div>}
+              {status.error && <div className="error">Polling failed. Please verify the backend execution endpoint.</div>}
               {status.data && (
                 <div>
                   <div>State: <span className={`badge ${status.data.status === 'completed' ? 'ok' : status.data.status === 'failed' ? 'err' : 'warn'}`}>{status.data.status}</span></div>
@@ -84,6 +95,11 @@ export default function Runner() {
                     <pre style={{ background: '#F9FAFB', padding: 12, borderRadius: 8, overflowX: 'auto' }}>
 {JSON.stringify(status.data.summary, null, 2)}
                     </pre>
+                  )}
+                  {reportForExecution && (
+                    <div style={{ marginTop: 12 }}>
+                      <div className="badge ok">Report Ready</div>
+                    </div>
                   )}
                 </div>
               )}
