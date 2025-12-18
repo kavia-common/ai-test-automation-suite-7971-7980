@@ -8,12 +8,20 @@ export default function TestList() {
   const remove = useApi(TestsAPI.remove, []);
   const navigate = useNavigate();
 
-  useEffect(() => { list.call(); }, []); // load
+  useEffect(() => {
+    const load = async () => { try { await list.call(); } catch {} };
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // load
 
   const onDelete = async (id) => {
     if (!window.confirm('Delete this test?')) return;
-    await remove.call(id);
-    await list.call();
+    try {
+      await remove.call(id);
+      await list.call();
+    } catch {
+      // handled below by friendly message
+    }
   };
 
   return (
@@ -22,7 +30,8 @@ export default function TestList() {
         <button className="btn primary" onClick={() => navigate('/tests/new')}>New Test</button>
       </div>
       {list.loading && <div>Loading tests...</div>}
-      {list.error && <div className="error">Failed to load tests. Check backend availability and CORS.</div>}
+      {list.error && <div className="error">Failed to load tests: {list.friendlyMessage}</div>}
+      {remove.error && <div className="error">Failed to delete test: {remove.friendlyMessage}</div>}
       {!list.loading && (!Array.isArray(list.data) || list.data.length === 0) && (
         <div className="empty">No tests found. Create one to get started.</div>
       )}

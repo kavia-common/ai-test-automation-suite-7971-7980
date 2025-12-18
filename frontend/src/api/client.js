@@ -1,11 +1,12 @@
 import axios from 'axios';
+import { normalizeAxiosError, logHttpError } from './errorUtils';
 
 /**
  * Normalize a base URL string by trimming trailing slashes.
  */
 function normalizeBase(url) {
   try {
-    return url.replace(/\/+$/, '');
+    return url.replace(/\/*$/, '');
   } catch {
     return url;
   }
@@ -56,18 +57,30 @@ const api = axios.create({
   withCredentials: false,
 });
 
-// Interceptors for basic error normalization
+// Attach request interceptor to capture method/url for better error logs
+api.interceptors.request.use(
+  (config) => {
+    // Attach timestamp for timing if needed
+    // eslint-disable-next-line no-param-reassign
+    config.metadata = { start: Date.now() };
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Interceptors for error normalization and rich logging
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    // Optionally add duration
+    if (res?.config?.metadata?.start) {
+      // eslint-disable-next-line no-param-reassign
+      res.durationMs = Date.now() - res.config.metadata.start;
+    }
+    return res;
+  },
   (error) => {
-    const normalized = {
-      status: error?.response?.status || 0,
-      message:
-        error?.response?.data?.message ||
-        error?.message ||
-        'Unknown error',
-      data: error?.response?.data,
-    };
+    const normalized = normalizeAxiosError(error, error?.config);
+    logHttpError('API', normalized);
     return Promise.reject(normalized);
   }
 );
@@ -89,6 +102,8 @@ export async function healthCheck() {
     const res = await api.get(url);
     return { ok: true, data: res.data };
   } catch (e) {
+    // Ensure health errors are visible and do not crash UI
+    logHttpError('HEALTHCHECK', e);
     return { ok: false, error: e };
   }
 }

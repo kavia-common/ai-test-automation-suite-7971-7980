@@ -7,7 +7,14 @@ export default function Dashboard() {
   const tests = useApi(TestsAPI.list, []);
   const reports = useApi(ReportsAPI.list, []);
 
-  useEffect(() => { tests.call(); reports.call(); }, []); // init
+  useEffect(() => {
+    const load = async () => {
+      try { await tests.call(); } catch (e) { /* already logged */ }
+      try { await reports.call(); } catch (e) { /* already logged */ }
+    };
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // init
 
   return (
     <div className="panel">
@@ -15,7 +22,9 @@ export default function Dashboard() {
       {(tests.loading || reports.loading) && <div>Loading...</div>}
       {(tests.error || reports.error) && (
         <div className="error">
-          Failed to load summary. Ensure the backend is reachable and CORS allows this origin.
+          <div>Failed to load summary. The app will continue with partial data.</div>
+          {tests.error && <div>Tests: {tests.friendlyMessage}</div>}
+          {reports.error && <div>Reports: {reports.friendlyMessage}</div>}
         </div>
       )}
       {!tests.loading && !reports.loading && (

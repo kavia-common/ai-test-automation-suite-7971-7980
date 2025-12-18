@@ -5,7 +5,11 @@ import { ReportsAPI } from '../../api/endpoints';
 
 export default function ReportsList() {
   const list = useApi(ReportsAPI.list, []);
-  useEffect(() => { list.call(); }, []);
+  useEffect(() => {
+    const load = async () => { try { await list.call(); } catch {} };
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const getStatus = (r) => r.status || r.result || 'unknown';
   const badgeClass = (val) => (val === 'passed' || val === 'completed') ? 'ok' : (val === 'failed' ? 'err' : 'warn');
@@ -16,7 +20,7 @@ export default function ReportsList() {
         <h3 style={{ margin: 0 }}>Reports</h3>
       </div>
       {list.loading && <div>Loading reports...</div>}
-      {list.error && <div className="error">Failed to load reports. Verify backend reports endpoints.</div>}
+      {list.error && <div className="error">Failed to load reports: {list.friendlyMessage}</div>}
       {!list.loading && (!Array.isArray(list.data) || list.data.length === 0) && (
         <div className="empty">No reports generated yet.</div>
       )}

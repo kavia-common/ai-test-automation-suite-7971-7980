@@ -6,7 +6,10 @@ import { ReportsAPI } from '../../api/endpoints';
 export default function ReportDetails() {
   const { id } = useParams();
   const req = useApi(ReportsAPI.get, []);
-  useEffect(() => { req.call(id); }, [id]); // load
+  useEffect(() => {
+    const load = async () => { try { await req.call(id); } catch {} };
+    load();
+  }, [id]); // load
 
   return (
     <div className="panel">
@@ -14,7 +17,7 @@ export default function ReportDetails() {
         <Link to="/reports" className="btn">Back</Link>
       </div>
       {req.loading && <div>Loading...</div>}
-      {req.error && <div className="error">Failed to load report. Verify backend and report ID.</div>}
+      {req.error && <div className="error">Failed to load report: {req.friendlyMessage}</div>}
       {req.data && (
         <>
           <h3 style={{ marginTop: 0 }}>{req.data.title || req.data.name || `Report ${id}`}</h3>

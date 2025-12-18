@@ -19,17 +19,22 @@ export default function TestForm() {
 
   useEffect(() => {
     if (isEdit) {
-      getReq.call(id).then((data) => {
-        if (data) {
-          setForm({
-            title: data.title || data.name || '',
-            description: data.description || '',
-            status: data.status || 'draft',
-          });
+      (async () => {
+        try {
+          const data = await getReq.call(id);
+          if (data) {
+            setForm({
+              title: data.title || data.name || '',
+              description: data.description || '',
+              status: data.status || 'draft',
+            });
+          }
+        } catch {
+          /* friendly message shown below */
         }
-      });
+      })();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const onChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -41,26 +46,34 @@ export default function TestForm() {
       description: form.description,
       status: form.status,
     };
-    if (isEdit) {
-      await saveUpdate.call(id, payload);
-    } else {
-      await saveCreate.call(payload);
+    try {
+      if (isEdit) {
+        await saveUpdate.call(id, payload);
+      } else {
+        await saveCreate.call(payload);
+      }
+      navigate('/tests');
+    } catch {
+      // Friendly message shown below
     }
-    navigate('/tests');
   };
 
   const onGenerate = async () => {
-    const res = await aiGen.call(prompt);
-    // Adapt to response mapping for /api/ai/generate-tests
-    // Expecting shape like { tests: [{ title, description, status }] } or { suggestions: [...] }
-    const candidates = Array.isArray(res?.tests) ? res.tests : (Array.isArray(res?.suggestions) ? res.suggestions : []);
-    if (candidates.length > 0) {
-      const t = candidates[0];
-      setForm({
-        title: t.title || t.name || 'AI Generated Test',
-        description: t.description || '',
-        status: t.status || 'proposed',
-      });
+    try {
+      const res = await aiGen.call(prompt);
+      // Adapt to response mapping for /api/ai/generate-tests
+      // Expecting shape like { tests: [{ title, description, status }] } or { suggestions: [...] }
+      const candidates = Array.isArray(res?.tests) ? res.tests : (Array.isArray(res?.suggestions) ? res.suggestions : []);
+      if (candidates.length > 0) {
+        const t = candidates[0];
+        setForm({
+          title: t.title || t.name || 'AI Generated Test',
+          description: t.description || '',
+          status: t.status || 'proposed',
+        });
+      }
+    } catch {
+      // Friendly message shown below
     }
   };
 
@@ -77,7 +90,13 @@ export default function TestForm() {
       </div>
 
       {(getReq.loading || saveCreate.loading || saveUpdate.loading) && <div>Loading...</div>}
-      {(getReq.error || saveCreate.error || saveUpdate.error) && <div className="error">Error saving or loading test.</div>}
+      {(getReq.error || saveCreate.error || saveUpdate.error) && (
+        <div className="error">
+          {getReq.error && <div>Load failed: {getReq.friendlyMessage}</div>}
+          {saveCreate.error && <div>Create failed: {saveCreate.friendlyMessage}</div>}
+          {saveUpdate.error && <div>Update failed: {saveUpdate.friendlyMessage}</div>}
+        </div>
+      )}
 
       <form onSubmit={onSubmit} className="grid two" style={{ gap: 16 }}>
         <div>
@@ -115,12 +134,8 @@ export default function TestForm() {
             </button>
           </div>
         </div>
-        {aiGen.error && <div className="error" style={{ marginTop: 8 }}>AI generation failed.</div>}
+        {aiGen.error && <div className="error" style={{ marginTop: 8 }}>AI generation failed: {aiGen.friendlyMessage}</div>}
       </div>
     </div>
   );
-}
-
-function tryParseJSON(v) {
-  try { return JSON.parse(v); } catch { return v; }
 }
